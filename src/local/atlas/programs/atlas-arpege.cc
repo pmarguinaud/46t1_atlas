@@ -23,23 +23,81 @@ using namespace atlas::util;
 using namespace atlas::array;
 using namespace atlas::meshgenerator;
 
-StructuredGrid forgeGrid ()
+
+
+StructuredGrid forgeGrid (const std::string & file)
 {
-#include "t32.h"
+  const double rad2deg = 180.0 / M_PI;
 
-  std::vector<Spacing> spacings (N);
+  const character * CLNOMF = file.c_str ();
+  
+  integer64 IREP, INUMER = 0, INIMES = 2, INBARP = 0, INBARI = 0;
+  logical LLNOMM = fort_TRUE, LLERFA = fort_TRUE, LLIMST = fort_TRUE;
+  character CLNOMC[2] = "c";
 
-  for (int i = 0; i < N; i++)
-    spacings[i] = Spacing (Config ("type", "linear") | Config ("N", pl[i])
-                         | Config ("start", 0) | Config ("end", 360));
+  faitou64_ (&IREP, &INUMER, &LLNOMM, (character*)CLNOMF, (character*)"OLD", &LLERFA, &LLIMST, &INIMES, &INBARP, &INBARI,      
+             CLNOMC, strlen (CLNOMF), 3, strlen (CLNOMC));
+
+  const int JPLATMAX = 2000;
+  real64 ZSLAPO, ZCLOPO, ZSLOPO, ZCODIL, ZREFER;
+  integer64 ITYPTR, ITRONC, INLATI, INXLON, INIVER;
+  integer64 INLOPA[JPLATMAX], INOZPA[JPLATMAX];
+  real64 ZSINLA[JPLATMAX], ZAHYBR[JPLATMAX], ZBHYBR[JPLATMAX];
+  logical LLGARD = fort_FALSE;
+
+  facies64_ (CLNOMC, &ITYPTR, &ZSLAPO, &ZCLOPO, &ZSLOPO,  &ZCODIL, &ITRONC, &INLATI, &INXLON, &INLOPA[0],       
+             &INOZPA[0], &ZSINLA[0], &INIVER, &ZREFER, &ZAHYBR[0], &ZBHYBR[0], &LLGARD, strlen (CLNOMC));
+
+  std::vector<int> pl;
+
+  for (int i = 0; i < INLATI / 2; i++)
+    pl.push_back (INLOPA[i]);
+  for (int i = INLATI / 2 - 1; i >= 0; i--)
+    pl.push_back (INLOPA[i]);
+
+  fairme64_ (&IREP, &INUMER, "KEEP", 4);
+
+  std::vector<Spacing> spacings (INLATI);
+
+  for (int i = 0; i < INLATI; i++)
+    {
+      double lonmax = 360.0 * double (pl[i] - 1) / double (pl[i]);
+      spacings[i] = Spacing (Config ("type", "linear") | Config ("N", pl[i])
+                           | Config ("start", 0) | Config ("end", lonmax));
+    }
 
   StructuredGrid::XSpace xspace (spacings);
-  StructuredGrid::YSpace yspace (Config ("type", "gaussian") | Config ("N", N));
-  Projection proj (Config ("type", "rotated_schmidt") | Config ("stretching_factor", stretchingFactor)
-                 | Config ("north_pole", std::vector<double>{longitudeOfStretchingPoleInDegrees, latitudeOfStretchingPoleInDegrees}));
+  StructuredGrid::YSpace yspace (Config ("type", "gaussian") | Config ("N", INLATI));
+
+  double stretchingFactor = ZCODIL;
+  double longitudeOfStretchingPoleInDegrees = rad2deg * atan2 (ZSLOPO, ZCLOPO);
+  double latitudeOfStretchingPoleInDegrees  = rad2deg * asin (ZSLAPO);
+
+  Projection proj (Config ("type", "rotated_schmidt") | Config ("stretching_factor", stretchingFactor) | Config ("rotation_angle", 0.0)
+                 | Config ("north_pole", std::vector<double>{longitudeOfStretchingPoleInDegrees, latitudeOfStretchingPoleInDegrees})
+                 | Config ("arpege", true));
 
   return StructuredGrid (xspace, yspace, proj);
 }
+
+static
+void showGrid (const Grid & grid)
+{
+
+  const Projection & proj = grid.projection (); 
+
+  std::cout << " size = " << grid.size () << std::endl;
+
+  int k = 0;
+  for (const auto & xy : grid.xy ()) 
+    {   
+      const PointLonLat ll = proj.lonlat (xy);
+      printf (" %8d > %20.10f, %20.10f | %20.10f, %20.10f\n", k, ll.lon (), ll.lat (), xy.x (), xy.y ());
+      k++;
+    }   
+
+}
+
 
 static
 void distributeGrid (const Grid & grid)
@@ -106,38 +164,15 @@ void distributeGrid (const Grid & grid)
 
 int main (int argc, char * argv[])
 {
-  
-  character * CLNOMF = argv[1];
-  
-  integer64 IREP, INUMER = 0, INIMES = 2, INBARP = 0, INBARI = 0;
-  logical LLNOMM = fort_TRUE, LLERFA = fort_TRUE, LLIMST = fort_TRUE;
-  character CLNOMC[2] = "c";
-
-  faitou64_ (&IREP, &INUMER, &LLNOMM, CLNOMF, (character*)"OLD", &LLERFA, &LLIMST, &INIMES, &INBARP, &INBARI,      
-             CLNOMC, strlen (CLNOMF), 3, strlen (CLNOMC));
-
-  const int JPLATMAX = 2000;
-  real64 ZSLAPO, ZCLOPO, ZSLOPO, ZCODIL, ZREFER;
-  integer64 ITYPTR, ITRONC, INLATI, INXLON, INIVER;
-  integer64 INLOPA[JPLATMAX], INOZPA[JPLATMAX];
-  real64 ZSINLA[JPLATMAX], ZAHYBR[JPLATMAX], ZBHYBR[JPLATMAX];
-  logical LLGARD = fort_FALSE;
-
-  facies64_ (CLNOMC, &ITYPTR, &ZSLAPO, &ZCLOPO, &ZSLOPO,  &ZCODIL, &ITRONC, &INLATI, &INXLON, &INLOPA[0],       
-             &INOZPA[0], &ZSINLA[0], &INIVER, &ZREFER, &ZAHYBR[0], &ZBHYBR[0], &LLGARD, strlen (CLNOMC));
-
-  for (int i = 0; i < INLATI / 2; i++)
-    printf (" %8d > %8ld\n", i, INLOPA[i]);
-
-  fairme64_ (&IREP, &INUMER, "KEEP", 4);
-
-  return 0;
-
   atlas::Library::instance ().initialise (argc, argv);
 
-  StructuredGrid grid = forgeGrid (); 
+  StructuredGrid grid = forgeGrid (std::string (argv[1])); 
 
-  distributeGrid (grid);
+  showGrid (grid);
+
+//StructuredGrid grid = forgeGrid ();
+
+//distributeGrid (grid);
   
   atlas::Library::instance ().finalise (); 
   return 0;
