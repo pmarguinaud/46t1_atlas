@@ -32,3 +32,9 @@ linux_bind.txt
 src/.odb_nmxupd 
 src/.odb_nmxupd
 stdeo.*
+
+ICMSHFCSTINIT
+*.txt
+ics_atlas_arpege
+ics_atlas_arpege_f
+
