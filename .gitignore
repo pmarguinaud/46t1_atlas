@@ -25,18 +25,11 @@ sys
 src/.gmak
 src/main
 src/unsxref
-ICMSHFCSTINIT 
-ics_atlas_aladin 
-ics_atlas_arpege 
 linux_bind.txt 
 src/.odb_nmxupd 
 src/.odb_nmxupd
 stdeo.*
-
-ICMSHFCSTINIT
-ICMSHAROMINIT
+ICMSH*
 *.txt
-ics_atlas_arpege
-ics_atlas_arpege_f
-ics_lfitools
+ics_*
 

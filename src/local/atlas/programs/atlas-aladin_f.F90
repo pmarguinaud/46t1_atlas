@@ -1,52 +1,86 @@
 
-use atlas_module, only : atlas_library, atlas_log, atlas_LambertRegionalGrid, &
-                       & atlas_Grid
+USE ATLAS_MODULE, ONLY : ATLAS_LIBRARY, ATLAS_LOG, ATLAS_LAMBERTREGIONALGRID, &
+                       & ATLAS_GRID
 
-implicit none
+USE FA_MOD, ONLY : FA_COM_DEFAULT, NEW_FA_DEFAULT, FACADR
 
-integer, parameter :: ndglg = 32
-integer :: nloeng (ndglg) = &
-[ 20, 30, 40, 48, 54, 60, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, &
-& 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 60, 54, 48, 40, 30, 20 ]
+USE PARKIND1, ONLY : JPRB, JPIM
 
-type (atlas_LambertRegionalGrid) :: grid
+IMPLICIT NONE
 
-integer, parameter :: Nx = 64, Ny = 64;
-integer, parameter :: Nux = 53, Ncx = 8, Nuy = 53, Ncy = 8;
+#include "abor1.intfb.h"
 
-real (8), parameter :: LaDInDegrees = 67.36, LoVInDegrees = 26.64;
-real (8), parameter :: DxInMetres = 2500, DyInMetres = 2500;
-real (8), parameter :: Latin1InDegrees = 67.36, Latin2InDegrees = 67.36;
+REAL (KIND=JPRB), PARAMETER :: RPI = 2.0_JPRB * ASIN (1.0_JPRB), &
+                             & R2PI = 2._JPRB * RPI,             &
+                             & RAD2DEG = 180._JPRB / RPI,        &
+                             & DEG2RAD = RPI / 180._JPRB
 
-integer :: ix, iy
+CHARACTER (LEN=*), PARAMETER :: CLNOMC = 'c'
+INTEGER (KIND=JPIM) :: ILUN, IREP, INBARP, INBARI
 
-call atlas_library%initialise()
+TYPE (ATLAS_LAMBERTREGIONALGRID) :: GRID
 
-grid = atlas_LambertRegionalGrid (Nx, Ny, -Nux / 2 * DxInMetres, -Nuy / 2 * DyInMetres, DxInMetres, DyInMetres, &
-                                & LoVInDegrees, LaDInDegrees, Latin1InDegrees, Latin2InDegrees)
+INTEGER, PARAMETER :: NX = 64, NY = 64;
+INTEGER, PARAMETER :: NUX = 53, NCX = 8, NUY = 53, NCY = 8;
 
-print *, " size = ", grid%size ()
+REAL (8), PARAMETER :: LADINDEGREES = 67.36, LOVINDEGREES = 26.64;
+REAL (8), PARAMETER :: DXINMETRES = 2500, DYINMETRES = 2500;
+REAL (8), PARAMETER :: LATIN1INDEGREES = 67.36, LATIN2INDEGREES = 67.36;
 
-do iy = 1, grid%ny ()
-  do ix = 1, grid%nx (iy)
-    write (*, '(2F20.10)') grid%lonlat (ix, iy)
-  enddo
-enddo
+INTEGER :: IX, IY
+
+CHARACTER (LEN=64) :: CLFILENAME
+
+CALL GETARG (1, CLFILENAME)
+
+CALL ATLAS_LIBRARY%INITIALISE()
+
+ILUN = 77_JPIM
+INBARP = 0
+INBARI = 0
+CALL FAITOU (IREP, ILUN, .TRUE., TRIM (CLFILENAME), 'OLD', &
+           & .TRUE., .TRUE., 2_JPIM, INBARP, INBARI, CLNOMC)
+
+BLOCK
+  INTEGER (KIND=JPIM) :: IRANGC
+  TYPE (FACADR), POINTER :: YLCADR
+  REAL (KIND=JPRB) :: DXINMETRES, DYINMETRES
+  REAL (KIND=JPRB) :: LOVINDEGREES, LADINDEGREES, LATIN1INDEGREES, LATIN2INDEGREES
+  INTEGER (KIND=JPIM) :: NUX, NUY
+
+  CALL FANUCA (CLNOMC, IRANGC, .FALSE.)
+
+  YLCADR => FA_COM_DEFAULT%CADRE (IRANGC)
+
+  DXINMETRES = YLCADR%SINLAT (7)
+  DYINMETRES = YLCADR%SINLAT (8)
+  NUX = YLCADR%NLOPAR (4)
+  NUY = YLCADR%NLOPAR (6)
+
+  LADINDEGREES    = YLCADR%SINLAT (4) * RAD2DEG
+  LATIN1INDEGREES = YLCADR%SINLAT (4) * RAD2DEG
+  LATIN2INDEGREES = YLCADR%SINLAT (4) * RAD2DEG
+  LOVINDEGREES    = YLCADR%SINLAT (3) * RAD2DEG
+
+  GRID = ATLAS_LAMBERTREGIONALGRID (YLCADR%NXLOPA, YLCADR%NLATIT, -NUX / 2 * DXINMETRES, -NUY / 2 * DYINMETRES, &
+                                  & DXINMETRES, DYINMETRES, LOVINDEGREES, LADINDEGREES, LATIN1INDEGREES, LATIN2INDEGREES)
+
+ENDBLOCK
+
+CALL FAIRME (IREP, ILUN, 'KEEP')
+
+PRINT *, " SIZE = ", GRID%SIZE ()
+
+DO IY = 1, GRID%NY ()
+  DO IX = 1, GRID%NX (IY)
+    WRITE (*, '(2F20.10)') GRID%LONLAT (IX, IY)
+  ENDDO
+ENDDO
 
 
-!call testGrid (grid)
+CALL GRID%FINAL ()
 
-call grid%final ()
+CALL ATLAS_LIBRARY%FINALISE()
 
-call atlas_library%finalise()
-
-contains
-
-subroutine testGrid (grid)
-
-type (atlas_Grid) :: grid
-
-end
-
-end 
+END 
 
