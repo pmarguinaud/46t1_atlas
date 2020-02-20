@@ -73,7 +73,7 @@ void showGrid (const Grid & grid)
   for (const auto & xy : grid.xy ())
     {
       const PointLonLat ll = proj.lonlat (xy);
-      printf (" %8d > %20.10f, %20.10f | %20.10f, %20.10f\n", k, ll.lon (), ll.lat (), xy.x (), xy.y ());
+      printf (" %20.10f, %20.10f\n", ll.lon (), ll.lat ());
       k++;
     }
 
@@ -184,13 +184,13 @@ int main (int argc, char * argv[])
 
   StructuredGrid grid = forgeStructuredGrid ();
   
-//showGrid (grid);
+  showGrid (static_cast<Grid> (grid));
 
   Grid grid1 = forgeRegionalGrid ();
 
 //showGrid (grid1);
 
-  distributeGrid (grid);
+//distributeGrid (grid);
   
   atlas::Library::instance ().finalise ();
   return 0;

@@ -1,50 +1,48 @@
 
-use atlas_module, only : atlas_library, atlas_log, atlas_ReducedGaussianGrid, &
-                       & atlas_Grid
+USE ATLAS_MODULE, ONLY : ATLAS_LIBRARY, ATLAS_LOG, ATLAS_REDUCEDGAUSSIANGRID, &
+                       & ATLAS_GRID
 
-implicit none
+USE FA_MOD, ONLY : FA_COM_DEFAULT, NEW_FA_DEFAULT, FACADR
 
-integer, parameter :: ndglg = 32
-integer :: nloeng (ndglg) = &
+USE PARKIND1, ONLY : JPRB, JPIM
+
+IMPLICIT NONE
+
+
+CHARACTER (LEN=*), PARAMETER :: CLNOMC = 'c'
+INTEGER (KIND=JPIM)   :: ILUN, IREP, INBARP, INBARI
+
+
+INTEGER, PARAMETER :: NDGLG = 32
+INTEGER :: NLOENG (NDGLG) = &
 [ 20, 30, 40, 48, 54, 60, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, &
 & 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 60, 54, 48, 40, 30, 20 ]
 
-type (atlas_ReducedGaussianGrid) :: grid
+TYPE (ATLAS_REDUCEDGAUSSIANGRID) :: GRID
 
-real (8), parameter :: latitudeOfStretchingPoleInDegrees = 46.4688;
-real (8), parameter :: longitudeOfStretchingPoleInDegrees = 2.57831;
-real (8), parameter :: stretchingFactor = 2.4;
+REAL (8), PARAMETER :: LATITUDEoFsTRETCHINGpOLEiNdEGREES = 46.4688;
+REAL (8), PARAMETER :: LONGITUDEoFsTRETCHINGpOLEiNdEGREES = 2.57831;
+REAL (8), PARAMETER :: STRETCHINGFACTOR = 2.4;
 
-integer :: ix, iy
+INTEGER :: IX, IY
 
-call atlas_library%initialise()
-
-
-grid = atlas_ReducedGaussianGrid (nloeng, [longitudeOfStretchingPoleInDegrees, &
-                                & latitudeOfStretchingPoleInDegrees], stretchingFactor)
-
-print *, " size = ", grid%size ()
-
-do iy = 1, grid%ny ()
-  do ix = 1, grid%nx (iy)
-    write (*, '(2F20.10)') grid%lonlat (ix, iy)
-  enddo
-enddo
+CALL ATLAS_LIBRARY%INITIALISE()
 
 
-!call testGrid (grid)
+GRID = ATLAS_REDUCEDGAUSSIANGRID (NLOENG, [LONGITUDEOFSTRETCHINGPOLEINDEGREES, &
+                                & LATITUDEOFSTRETCHINGPOLEINDEGREES], STRETCHINGFACTOR)
 
-call grid%final ()
+PRINT *, " SIZE = ", GRID%SIZE ()
 
-call atlas_library%finalise()
+DO IY = 1, GRID%NY ()
+  DO IX = 1, GRID%NX (IY)
+    WRITE (*, '(2F20.10)') GRID%LONLAT (IX, IY)
+  ENDDO
+ENDDO
 
-contains
+CALL GRID%FINAL ()
 
-subroutine testGrid (grid)
+CALL ATLAS_LIBRARY%FINALISE()
 
-type (atlas_Grid) :: grid
-
-end
-
-end 
+END 
 

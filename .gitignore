@@ -34,6 +34,7 @@ src/.odb_nmxupd
 stdeo.*
 
 ICMSHFCSTINIT
+ICMSHAROMINIT
 *.txt
 ics_atlas_arpege
 ics_atlas_arpege_f
