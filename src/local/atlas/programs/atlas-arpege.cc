@@ -120,7 +120,7 @@ void distributeGrid (const Grid & grid)
   std::cout << " lsize = " << lsize << std::endl;
   std::cout << " gsize = " << gsize << std::endl;
   
-  functionspace::NodeColumns nodes_fs = functionspace::NodeColumns (mesh);
+  functionspace::NodeColumns nodes_fs = functionspace::NodeColumns (mesh, Config ("halo", 0));
 
   {
     printf ("%s:%d\n", __FILE__, __LINE__);
@@ -172,7 +172,7 @@ int main (int argc, char * argv[])
 
 //StructuredGrid grid = forgeGrid ();
 
-//distributeGrid (grid);
+  distributeGrid (grid);
   
   atlas::Library::instance ().finalise (); 
   return 0;
