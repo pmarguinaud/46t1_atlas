@@ -182,96 +182,106 @@ LLFOUND = YLCFPR%GET ("type",      CLPROJ)
 
 SELECT CASE (TRIM (CLPROJ))
   CASE ("rotated_schmidt") 
-    BLOCK
-      REAL (KIND=JPRB) :: ZAHYBR (2), ZBHYBR (2), ZSLAPO, ZCLOPO, ZSLOPO, ZCODIL, ZREFER
-      INTEGER (KIND=JPIM) :: INIVER, ITYPTR, ITRONC, INLATI, INXLON
-      REAL (KIND=JPRB), ALLOCATABLE :: ZCENTRE (:), RMU (:)
-      INTEGER (KIND=JPIM), ALLOCATABLE :: NLOENG (:), INOZPA (:)
-      INTEGER (KIND=JPIM) :: NDGLG, IGLG
-    
-      LLFOUND = YLCFPR%GET ("north_pole",        ZCENTRE )
-      LLFOUND = YLCFPR%GET ("stretching_factor", ZCODIL  )
-      LLFOUND = YLCFXS%GET ("N[]",               NLOENG  )
-      LLFOUND = YLCFYS%GET ("N",                 NDGLG   )
-    
-    
-      WRITE (*, *) "north_pole",        ZCENTRE 
-      WRITE (*, *) "stretching_factor", ZCODIL  
-      WRITE (*, *) "N[]",               NLOENG  
-      WRITE (*, *) "N",                 NDGLG   
-    
-      
-      INIVER = 1_JPIM
-      ZAHYBR = 0._JPRB
-      ZBHYBR = 0._JPRB
-      ITYPTR = 2_JPIM
-      ZSLAPO = SIN (ZCENTRE (2) * DEG2RAD)
-      ZCLOPO = COS (ZCENTRE (1) * DEG2RAD)
-      ZSLOPO = SIN (ZCENTRE (1) * DEG2RAD)
-      ITRONC = NDGLG-1
-      INLATI = NDGLG
-      INXLON = MAXVAL (NLOENG)
-      ALLOCATE (INOZPA (NDGLG))
-      INOZPA = MIN (ITRONC, NLOENG/2_JPIM-1_JPIM)
-      ZREFER = 1._JPRB
+  BLOCK
+    REAL (KIND=JPRB) :: ZAHYBR (2), ZBHYBR (2), ZSLAPO, ZCLOPO, ZSLOPO, ZCODIL, ZREFER
+    INTEGER (KIND=JPIM) :: INIVER, ITYPTR, ITRONC, INLATI, INXLON
+    REAL (KIND=JPRB), ALLOCATABLE :: ZCENTRE (:), RMU (:)
+    INTEGER (KIND=JPIM), ALLOCATABLE :: NLOENG (:), INOZPA (:)
+    INTEGER (KIND=JPIM) :: NDGLG, IGLG
+  
+    LLFOUND = YLCFPR%GET ("north_pole",        ZCENTRE )
+    LLFOUND = YLCFPR%GET ("stretching_factor", ZCODIL  )
+    LLFOUND = YLCFXS%GET ("N[]",               NLOENG  )
+    LLFOUND = YLCFYS%GET ("N",                 NDGLG   )
+  
+  
+    INIVER = 1_JPIM
+    ZAHYBR = 0._JPRB
+    ZBHYBR = 0._JPRB
+    ITYPTR = 2_JPIM
+    ZSLAPO = SIN (ZCENTRE (2) * DEG2RAD)
+    ZCLOPO = COS (ZCENTRE (1) * DEG2RAD)
+    ZSLOPO = SIN (ZCENTRE (1) * DEG2RAD)
+    ITRONC = NDGLG-1
+    INLATI = NDGLG
+    INXLON = MAXVAL (NLOENG)
+    ALLOCATE (INOZPA (NDGLG))
+    INOZPA = MIN (ITRONC, NLOENG/2_JPIM-1_JPIM)
+    ZREFER = 1._JPRB
 
-      ALLOCATE (RMU (NDGLG))
+    ALLOCATE (RMU (NDGLG))
 
-      DO IGLG = 1, NDGLG
-        RMU (IGLG) = SIN (YDGRID%Y (IGLG) * DEG2RAD)
-      ENDDO
+    DO IGLG = 1, NDGLG
+      RMU (IGLG) = SIN (YDGRID%Y (IGLG) * DEG2RAD)
+    ENDDO
 
-      CALL FACADE (CLNOMC, ITYPTR, ZSLAPO, ZCLOPO, ZSLOPO, &
-      &            ZCODIL, ITRONC, INLATI, INXLON, NLOENG, &
-      &            INOZPA, RMU,    INIVER, ZREFER, ZAHYBR, &
-      &            ZBHYBR, .FALSE.)
+    CALL FACADE (CLNOMC, ITYPTR, ZSLAPO, ZCLOPO, ZSLOPO, &
+    &            ZCODIL, ITRONC, INLATI, INXLON, NLOENG, &
+    &            INOZPA, RMU,    INIVER, ZREFER, ZAHYBR, &
+    &            ZBHYBR, .FALSE.)
 
-      
-    ENDBLOCK
-   CASE ("lambert_conformal_conic") 
-    BLOCK
-      REAL (KIND=JPRB) :: XMIN, XMAX, YMIN, YMAX
-      REAL (KIND=JPRB) :: DXINMETRES, DYINMETRES
-      REAL (KIND=JPRB) :: LOVINDEGREES, LADINDEGREES, LATIN1INDEGREES, LATIN2INDEGREES
-      INTEGER (KIND=JPIM) :: NUX, NUY, NX, NY
     
-      LLFOUND = YLCFDO%GET ("latitude0",  LADINDEGREES   )
-      LLFOUND = YLCFDO%GET ("longitude0", LOVINDEGREES   )
-      LLFOUND = YLCFDO%GET ("latitude1",  LATIN1INDEGREES)
-      LLFOUND = YLCFDO%GET ("latitude2",  LATIN2INDEGREES)
-      LLFOUND = YLCFDO%GET ("xmin",       XMIN           )
-      LLFOUND = YLCFDO%GET ("xmax",       XMAX           )
-      LLFOUND = YLCFDO%GET ("ymin",       YMIN           )
-      LLFOUND = YLCFDO%GET ("ymax",       YMAX           )
-      LLFOUND = YLCFXS%GET ("N",          NX             )
-      LLFOUND = YLCFYS%GET ("N",          NY             )
-    
-      DXINMETRES = (XMAX - XMIN) / REAL (NX - 1, JPRB)
-      DYINMETRES = (YMAX - YMIN) / REAL (NY - 1, JPRB)
-    
-      NUX =  NINT (-2 * XMIN / DXINMETRES)
-      NUY =  NINT (-2 * YMIN / DYINMETRES)
-    
-    
-      WRITE (*, *) "latitude0",  LADINDEGREES   
-      WRITE (*, *) "longitude0", LOVINDEGREES   
-      WRITE (*, *) "latitude1",  LATIN1INDEGREES
-      WRITE (*, *) "latitude2",  LATIN2INDEGREES
-      WRITE (*, *) "xmin",       XMIN           
-      WRITE (*, *) "xmax",       XMAX           
-      WRITE (*, *) "ymin",       YMIN           
-      WRITE (*, *) "ymax",       YMAX           
-      WRITE (*, *) "NX",         NX            
-      WRITE (*, *) "NY",         NY            
-      WRITE (*, *) "DXINMETRES", DXINMETRES
-      WRITE (*, *) "DYINMETRES", DYINMETRES
-      WRITE (*, *) "NUX",        NUX            
-      WRITE (*, *) "NUY",        NUY            
-    
-    
-    
-    
-    ENDBLOCK
+  ENDBLOCK
+  CASE ("lambert_conformal_conic") 
+  BLOCK
+    REAL (KIND=JPRB) :: ZAHYBR (2), ZBHYBR (2), ZSLAPO, ZCLOPO, ZSLOPO, ZCODIL, ZREFER
+    INTEGER (KIND=JPIM) :: INIVER, ITYPTR, ITRONC, INLATI, INXLON
+    REAL (KIND=JPRB), ALLOCATABLE :: ZSINLA (:)
+    INTEGER (KIND=JPIM) :: INLOPA (8)
+    INTEGER (KIND=JPIM), ALLOCATABLE :: INOZPA (:)
+    REAL (KIND=JPRB) :: XMIN, XMAX, YMIN, YMAX
+    REAL (KIND=JPRB) :: DXINMETRES, DYINMETRES
+    REAL (KIND=JPRB) :: LOVINDEGREES, LADINDEGREES, LATIN1INDEGREES, LATIN2INDEGREES
+    INTEGER (KIND=JPIM) :: NUX, NUY, NX, NY
+  
+    LLFOUND = YLCFDO%GET ("latitude0",  LADINDEGREES   )
+    LLFOUND = YLCFDO%GET ("longitude0", LOVINDEGREES   )
+    LLFOUND = YLCFDO%GET ("latitude1",  LATIN1INDEGREES)
+    LLFOUND = YLCFDO%GET ("latitude2",  LATIN2INDEGREES)
+    LLFOUND = YLCFDO%GET ("xmin",       XMIN           )
+    LLFOUND = YLCFDO%GET ("xmax",       XMAX           )
+    LLFOUND = YLCFDO%GET ("ymin",       YMIN           )
+    LLFOUND = YLCFDO%GET ("ymax",       YMAX           )
+    LLFOUND = YLCFXS%GET ("N",          NX             )
+    LLFOUND = YLCFYS%GET ("N",          NY             )
+  
+    DXINMETRES = (XMAX - XMIN) / REAL (NX - 1, JPRB)
+    DYINMETRES = (YMAX - YMIN) / REAL (NY - 1, JPRB)
+  
+    NUX =  NINT (-2 * XMIN / DXINMETRES)
+    NUY =  NINT (-2 * YMIN / DYINMETRES)
+  
+  
+    WRITE (*, *) "latitude0",  LADINDEGREES   
+    WRITE (*, *) "longitude0", LOVINDEGREES   
+    WRITE (*, *) "latitude1",  LATIN1INDEGREES
+    WRITE (*, *) "latitude2",  LATIN2INDEGREES
+    WRITE (*, *) "xmin",       XMIN           
+    WRITE (*, *) "xmax",       XMAX           
+    WRITE (*, *) "ymin",       YMIN           
+    WRITE (*, *) "ymax",       YMAX           
+    WRITE (*, *) "NX",         NX            
+    WRITE (*, *) "NY",         NY            
+    WRITE (*, *) "DXINMETRES", DXINMETRES
+    WRITE (*, *) "DYINMETRES", DYINMETRES
+    WRITE (*, *) "NUX",        NUX            
+    WRITE (*, *) "NUY",        NUY            
+  
+    INLATI = NY
+    INXLON = NX
+    ZSLAPO = 0._JPRB
+    ZCLOPO = 0._JPRB
+    ZSLOPO = 0._JPRB
+    ZCODIL = 0._JPRB
+    ZREFER = 0._JPRB
+    INIVER = 0._JPRB
+    ZAHYBR = 0._JPRB
+    ZBHYBR = 0._JPRB
+!   ITYPTR = 
+
+  
+  
+  ENDBLOCK
 END SELECT
 
 
