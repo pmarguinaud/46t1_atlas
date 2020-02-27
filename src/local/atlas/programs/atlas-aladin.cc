@@ -77,6 +77,10 @@ void showGrid (const Grid & grid)
       k++;
     }
 
+  const Config config = grid.spec ();
+
+  std::cout << config << std::endl;
+
 }
 
 static

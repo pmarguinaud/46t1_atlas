@@ -32,4 +32,7 @@ stdeo.*
 ICMSH*
 *.txt
 ics_*
+.mpiautotimeout.*
+.xgdb*
+*.ddt
 

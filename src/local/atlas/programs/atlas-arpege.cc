@@ -96,6 +96,10 @@ void showGrid (const Grid & grid)
       k++;
     }   
 
+  const Config config = grid.spec ();
+
+  std::cout << config << std::endl;
+
 }
 
 
@@ -172,7 +176,7 @@ int main (int argc, char * argv[])
 
 //StructuredGrid grid = forgeGrid ();
 
-  distributeGrid (grid);
+//distributeGrid (grid);
   
   atlas::Library::instance ().finalise (); 
   return 0;
