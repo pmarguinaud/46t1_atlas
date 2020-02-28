@@ -35,4 +35,5 @@ ics_*
 .mpiautotimeout.*
 .xgdb*
 *.ddt
+*.swp
 
