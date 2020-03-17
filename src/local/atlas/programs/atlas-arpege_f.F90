@@ -77,8 +77,8 @@ ENDDO
 YLMESHGEN = ATLAS_MESHGENERATOR ()
 
 YLCONF    = ATLAS_CONFIG()
-!CALL YLCONF%SET ('type', 'equal_regions')
-CALL YLCONF%SET ('type', 'checkerboard')
+CALL YLCONF%SET ('type', 'equal_regions')
+!CALL YLCONF%SET ('type', 'checkerboard')
 YLDIST    = ATLAS_GRIDDISTRIBUTION (YLGRID, YLCONF)
 CALL YLCONF%FINAL ()
 

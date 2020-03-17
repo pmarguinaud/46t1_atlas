@@ -36,4 +36,6 @@ ics_*
 .xgdb*
 *.ddt
 *.swp
-
+slurm-*.out
+*.db
+*.lst
